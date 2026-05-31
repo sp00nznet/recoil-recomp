@@ -1,0 +1,35 @@
+# Game data — never commit (copyrighted)
+*.exe
+*.dll
+*.bin
+*.cue
+*.cab
+*.hdr
+*.iso
+*.mdf
+*.mds
+disc_image/
+game_files/
+analysis/*.exe
+
+# Generated (regenerable from Recoil.exe + run_pipeline.py)
+src/recomp/gen/
+
+# IDA databases
+*.i64
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+
+# Build / python
+build/
+*.obj
+*.o
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+.DS_Store
