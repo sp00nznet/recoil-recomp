@@ -23,7 +23,8 @@ three.
 |-------|--------|-------------|
 | **Phase 0** | **Complete** | Disc extraction (BIN/CUE→ISO, InstallShield cab), triage, **IDA-seeded discovery** |
 | **Phase 1** | **Complete** | x86→C code generation — **3,490 functions, 0 lift errors**, 321K lines |
-| Phase 2 | Pending | Compilation & linking (C toolchain + runtime bringup) |
+| **Phase 2** | **Complete** | Compilation — **all 8 translation units compile** (MSVC x86, 0 errors) |
+| Phase 3 | Pending | Executable link: Win32/MFC42 runtime, register/memory model, import bridges |
 | Phase 3+ | Pending | Win32/DirectX HAL, GOS engine abstraction, asset loading, gameplay |
 
 ## Binary

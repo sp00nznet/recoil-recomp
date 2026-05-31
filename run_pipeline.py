@@ -9,7 +9,7 @@ that a call-graph sweep would miss (cf. the Crimson Skies vtable gap).
 
 Usage: python run_pipeline.py [analysis/HSBR.exe] [src/recomp/gen]
 """
-import sys, os, json, time, struct
+import sys, os, json, time, struct, re
 
 _here = os.path.dirname(os.path.abspath(__file__))
 _pc = os.path.join(_here, 'tools', 'pcrecomp', 'tools')
@@ -23,6 +23,12 @@ from capstone.x86 import X86_OP_IMM
 
 COND_JUMPS = {'je','jne','jz','jnz','ja','jae','jb','jbe','jg','jge','jl','jle',
               'js','jns','jo','jno','jp','jnp','jcxz','jecxz'}
+
+# The lifter emits FPU-compare branches as 1-arg CMP_xx(_fpu_cmp), but CMP_xx are
+# 2-arg integer-flag macros. _fpu_cmp is -1/0/1 (less/equal/greater), so rewrite
+# the 1-arg forms to a direct comparison against 0.
+FPU_CMP = {'EQ':'==','NE':'!=','B':'<','BE':'<=','A':'>','AE':'>=',
+           'L':'<','LE':'<=','G':'>','GE':'>='}
 
 
 class LinearInstruction:
@@ -71,8 +77,18 @@ def lift_function_linear(lifter, name, instructions, leaders):
         for line in lifter.lift_instruction(insn): lines.append(f'    {line}')
     if instructions and not instructions[-1].is_ret:
         lines.append('    return; /* end of function */')
+    # Cross-function jumps reference labels outside this function's range; emit them
+    # as indirect tail-calls so the C compiles and dispatch handles them at runtime.
+    body = '\n'.join(lines)
+    defined = set(re.findall(r'(?m)^\s*(L_[0-9A-Fa-f]{8})\s*:', body))
+    refed = set(re.findall(r'goto\s+(L_[0-9A-Fa-f]{8})', body))
+    for lbl in sorted(refed - defined):
+        lines.append(f'    {lbl}: RECOMP_ITAIL(0x{int(lbl[2:],16):08X}u); return;')
     lines.append('}')
-    return '\n'.join(lines)
+    out = '\n'.join(lines)
+    out = re.sub(r'CMP_(\w+)\(_fpu_cmp\)',
+                 lambda m: f'((_fpu_cmp) {FPU_CMP.get(m.group(1), "==")} 0)', out)
+    return out
 
 
 def write_chunk(out, idx, funcs):
