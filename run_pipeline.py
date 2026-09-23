@@ -7,7 +7,7 @@ config/functions.json (IDA Pro discovery, which follows vtables) instead of a
 call-graph/prologue heuristic. This captures the ~950 virtual methods up-front
 that a call-graph sweep would miss (cf. the Crimson Skies vtable gap).
 
-Usage: python run_pipeline.py [analysis/HSBR.exe] [src/recomp/gen]
+Usage: python run_pipeline.py [analysis/Recoil.exe] [src/recomp/gen]
 """
 import sys, os, json, time, struct, re
 

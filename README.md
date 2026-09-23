@@ -1,6 +1,6 @@
 # Recoil — Static Recompilation
 
-A static recompilation of **Recoil** (1999, Zipper Interactive / Electronic Arts),
+A static recompilation of **Recoil** (1999, developed by Zipper Interactive, published by Virgin Interactive),
 targeting modern Windows with native x86 execution.
 
 Recoil is a vehicular-combat game on the Zipper Interactive **GameZ/GOS engine** —
@@ -60,17 +60,40 @@ entries from the IDA list:
 | Lift errors | **0** |
 | Output | 321,121 lines of C, 16.7 MB |
 
+The generated `src/recomp/gen/` is **not committed**. Lifted C is a derivative work
+of `Recoil.exe`, so it is generated locally from your own copy of the game. The
+function list (`config/functions.json`, addresses only) is what makes it
+reproducible. Same lifter / `recomp_types.h` as the Crimson Skies project, which
+already compiles cleanly.
+
+## Build
+
+Requires Python 3.11 with `capstone`, CMake 3.20+ and MSVC (32-bit target).
+
 ```
-py -3.11 tools/pcrecomp/...        # (vendored)
-py -3.11 run_pipeline.py           # -> src/recomp/gen/recomp_*.c
+copy <your install>\Recoil.exe analysis\Recoil.exe   # gitignored, never committed
+py -3.11 run_pipeline.py                              # -> src/recomp/gen/recomp_*.c
+cmake -B build -A Win32
+cmake --build build
 ```
 
-The generated `src/recomp/gen/` is **not committed** (regenerable from `Recoil.exe` +
-the function list). Same lifter / `recomp_types.h` as the Crimson Skies project, which
-already compiles cleanly.
+Today that builds the lifted code as a static library. There is no executable
+yet; linking one is Phase 3.
+
+## Toolkit
+
+The lifter and PE analysis come from [pcrecomp](https://github.com/sp00nznet/pcrecomp),
+the family's shared recompilation toolkit. `tools/pcrecomp/` is a **vendored
+snapshot** taken when this project started (May 2026). It is not kept in sync, and
+upstream pcrecomp has moved well past it. Treat upstream as the reference.
 
 ## Disc note
 The source is a BIN/CUE (Mode2/2352). Converted to ISO with `mdf2iso.py`; the game
 files live in an **InstallShield v5** `data1.cab` (header embedded), extracted with
 `pcrecomp/tools/assets/isextract.py`. Game data is **not** in this repo — supply your
 own legally-obtained copy.
+
+## License
+
+MIT for the code in this repository. See [LICENSE](LICENSE), including its Scope
+section: the grant does not cover Recoil itself or the lifted C.
